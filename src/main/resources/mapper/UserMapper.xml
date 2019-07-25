@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.study.mybatis.dao.UserDao">
+    <resultMap id="oneMap" type="User">
+        <id column="userId" property="userId"/>
+        <result column="userName" property="userName"/>
+        <result column="userSex" property="userSex"/>
+        <result column="userEmail" property="userEmail"/>
+        <!--property="department"   User  class中定义的Deaprtment-->
+        <association property="depart" javaType="Department">
+            <id column="depId" property="depId"/>
+            <result column="depName" property="depName"/>
+        </association>
+    </resultMap>
+
+    <select  id="selectOneUser"    resultMap="oneMap">
+    select u.userId,u.userName,u.userSex,u.userEmail,
+    d.depId,d.depName
+    from  user2 u,department d where  u.userId=d.depId  and  userId=#{userId}
+    </select>
+   <select id="seletMap"  resultType="User"  resultMap="oneMap">
+       select  * from  user2 where  userName=#{userName}
+   </select>
+
+
+    <insert id="addUser" parameterType="User" useGeneratedKeys="true"  keyProperty="userId">
+        insert   into  user2(userName, userSex, userEmail)
+        values (#{userName},#{userSex},#{userEmail})
+    </insert>
+
+
+    <delete id="deleteUser">
+        delete  from  user2  where userId=#{id}
+    </delete>
+
+
+    <!--动态sql-->
+      <!-- List<User>  getUserByCondition(User  user);-->
+    <select id="getUserByCondition"   resultType="User">
+        select *
+        from   user2
+
+        /*
+        prefix="给拼串后的字符串加一个前缀"
+        prefixOverrides=""前缀覆盖,去掉整个字符串多余的字符
+        suffix="给拼串后的字符串加一个后缀 " suffixOverrides="后缀覆盖"*/
+       <!-- <trim prefix="" suffix=" " prefixOverrides="" suffixOverrides="">
+        <if test="userSex!=null">
+            userSex=#{userSex}
+        </if>
+        </trim>-->
+       /*choose   哪个属性有值就用哪个属性查*/
+       <where>
+           /*进入分支选择*/
+            <choose>
+                <when test="userId!=null">
+                    userId=#{userId}
+                </when>
+                <when test="userName!=null">
+                    userName=#{userName}
+                </when>
+               <otherwise>
+                   userSex='男'
+               </otherwise>
+
+            </choose>
+
+       </where>
+    </select>
+
+
+    <update id="updateUser">
+        update user2
+        <set>
+        <if test="userName!=null">
+            userName=#{userName},
+        </if>
+        <if test="userSex!=null">
+            userSex=#{userSex},
+        </if>
+        <if test="userEmail!=null">
+            userEmail=#{userEmail}
+        </if>
+        </set>
+
+        where  userId=#{userId}
+    </update>
+
+
+
+</mapper>
